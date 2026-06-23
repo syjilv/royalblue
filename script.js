@@ -134,7 +134,14 @@ function loadSheetState() {
   const script = document.createElement("script");
 
   return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("구글 시트에 접근하지 못했습니다. Apps Script 웹앱 액세스 권한을 확인해주세요."));
+    }, 8000);
+
     window[callbackName] = (data) => {
+      window.clearTimeout(timeout);
       sheetState = {
         totalQuantity: Number(data.totalQuantity) || 0,
         entries: Array.isArray(data.entries) ? data.entries : [],
@@ -146,6 +153,7 @@ function loadSheetState() {
     };
 
     script.onerror = () => {
+      window.clearTimeout(timeout);
       delete window[callbackName];
       script.remove();
       reject(new Error("구글 시트 집계를 불러오지 못했습니다."));
