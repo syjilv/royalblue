@@ -1,4 +1,3 @@
-const STORAGE_KEY = "royalblue-demand-2026";
 const SIZES = ["S", "M", "L", "XL", "2XL", "3XL"];
 const SURCHARGE_SIZES = new Set(["2XL", "3XL"]);
 const PRICE_TIERS = [
@@ -22,37 +21,23 @@ const shippingFee = document.querySelector("#shippingFee");
 const baseUnitPrice = document.querySelector("#baseUnitPrice");
 const draftEstimate = document.querySelector("#draftEstimate");
 const entryList = document.querySelector("#entryList");
-const clearEntries = document.querySelector("#clearEntries");
+const refreshEntries = document.querySelector("#refreshEntries");
+const submitButton = document.querySelector("#submitButton");
+const endpointInput = document.querySelector("#sheetEndpoint");
 const counters = [...document.querySelectorAll(".size-counter")];
 const deliveryRadios = [...document.querySelectorAll('input[name="delivery"]')];
 const quantities = Object.fromEntries(SIZES.map((size) => [size, 0]));
 
+let sheetState = {
+  totalQuantity: 0,
+  entries: [],
+};
+
 const formatWon = (value) => `${value.toLocaleString("ko-KR")}원`;
 const formatCount = (value) => `${value.toLocaleString("ko-KR")}장`;
 
-function loadEntries() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(entries) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-}
-
 function totalForCounts(counts) {
   return SIZES.reduce((sum, size) => sum + (Number(counts[size]) || 0), 0);
-}
-
-function savedCounts(entries = loadEntries()) {
-  return entries.reduce((acc, entry) => {
-    SIZES.forEach((size) => {
-      acc[size] += Number(entry.counts?.[size]) || 0;
-    });
-    return acc;
-  }, Object.fromEntries(SIZES.map((size) => [size, 0])));
 }
 
 function priceForTotal(total) {
@@ -75,6 +60,14 @@ function deliveryFee() {
   return selectedDelivery() === "택배" ? SHIPPING_FEE : 0;
 }
 
+function endpoint() {
+  return endpointInput.value.trim();
+}
+
+function isEndpointReady() {
+  return endpoint() && !endpoint().includes("PASTE_GOOGLE_APPS_SCRIPT");
+}
+
 function setStatus(message, type = "") {
   statusMessage.textContent = message;
   statusMessage.className = `form-status${type ? ` is-${type}` : ""}`;
@@ -87,16 +80,16 @@ function updateCounters() {
   });
 }
 
-function renderEntries(entries = loadEntries()) {
+function renderEntries(entries = sheetState.entries) {
   if (!entries.length) {
-    entryList.innerHTML = "<p>아직 저장된 수요가 없습니다.</p>";
+    entryList.innerHTML = "<p>아직 접수된 수요가 없습니다.</p>";
     return;
   }
 
   entryList.innerHTML = entries
     .map((entry) => {
       const details = SIZES
-        .filter((size) => entry.counts[size])
+        .filter((size) => entry.counts?.[size])
         .map((size) => `${size} ${entry.counts[size]}`)
         .join(" · ");
 
@@ -104,9 +97,9 @@ function renderEntries(entries = loadEntries()) {
         <article class="entry-card">
           <div>
             <strong>${entry.name}</strong>
-            <span>${details} · 총 ${formatCount(totalForCounts(entry.counts))} · ${entry.delivery ?? "현장수령"}</span>
+            <span>${details} · 총 ${formatCount(totalForCounts(entry.counts || {}))} · ${entry.delivery || "현장수령"}</span>
           </div>
-          <span>${new Date(entry.createdAt).toLocaleDateString("ko-KR")}</span>
+          <span>${entry.submittedAt ? new Date(entry.submittedAt).toLocaleDateString("ko-KR") : "-"}</span>
         </article>
       `;
     })
@@ -114,9 +107,7 @@ function renderEntries(entries = loadEntries()) {
 }
 
 function calculate() {
-  const entries = loadEntries();
-  const existingCounts = savedCounts(entries);
-  const savedQuantity = totalForCounts(existingCounts);
+  const savedQuantity = Number(sheetState.totalQuantity) || 0;
   const draftQuantity = totalForCounts(quantities);
   const expectedTotalQuantity = savedQuantity + draftQuantity;
   const unitPrice = priceForTotal(expectedTotalQuantity);
@@ -128,7 +119,73 @@ function calculate() {
   baseUnitPrice.textContent = formatWon(unitPrice);
   draftEstimate.textContent = formatWon(estimateForCounts(quantities, unitPrice) + deliveryFee());
   updateCounters();
-  renderEntries(entries);
+  renderEntries();
+}
+
+function loadSheetState() {
+  if (!isEndpointReady()) {
+    setStatus("구글 시트 연동 주소를 연결하면 전체 접수 수량을 불러옵니다.", "error");
+    renderEntries([]);
+    calculate();
+    return Promise.resolve();
+  }
+
+  const callbackName = `royalblueDemand_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const script = document.createElement("script");
+
+  return new Promise((resolve, reject) => {
+    window[callbackName] = (data) => {
+      sheetState = {
+        totalQuantity: Number(data.totalQuantity) || 0,
+        entries: Array.isArray(data.entries) ? data.entries : [],
+      };
+      delete window[callbackName];
+      script.remove();
+      calculate();
+      resolve();
+    };
+
+    script.onerror = () => {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("구글 시트 집계를 불러오지 못했습니다."));
+    };
+
+    const url = new URL(endpoint());
+    url.searchParams.set("callback", callbackName);
+    script.src = url.toString();
+    document.body.appendChild(script);
+  });
+}
+
+async function submitToSheet(payload) {
+  if (!isEndpointReady()) {
+    throw new Error("구글 시트 연동 주소가 아직 연결되지 않았습니다.");
+  }
+
+  await fetch(endpoint(), {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+function payloadFromForm() {
+  const unitPrice = priceForTotal((Number(sheetState.totalQuantity) || 0) + totalForCounts(quantities));
+  return {
+    submittedAt: new Date().toISOString(),
+    name: new FormData(form).get("name")?.trim() ?? "",
+    counts: { ...quantities },
+    delivery: selectedDelivery(),
+    unitPrice,
+    shippingFee: deliveryFee(),
+    plusSizeSurcharge:
+      (Number(quantities["2XL"]) + Number(quantities["3XL"])) * PLUS_SIZE_SURCHARGE,
+    estimatedTotal: estimateForCounts(quantities, unitPrice) + deliveryFee(),
+  };
 }
 
 counters.forEach((counter) => {
@@ -151,7 +208,17 @@ deliveryRadios.forEach((radio) => {
   });
 });
 
-form.addEventListener("submit", (event) => {
+refreshEntries.addEventListener("click", async () => {
+  setStatus("구글 시트 집계를 불러오는 중입니다.");
+  try {
+    await loadSheetState();
+    setStatus("최신 접수 수량을 불러왔습니다.", "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const name = new FormData(form).get("name")?.trim();
@@ -167,28 +234,26 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const entries = loadEntries();
-  entries.push({
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
-    name,
-    counts: { ...quantities },
-    delivery: selectedDelivery(),
-  });
-  saveEntries(entries);
+  submitButton.disabled = true;
+  submitButton.textContent = "저장 중";
+  setStatus("구글 시트에 저장하는 중입니다.");
 
-  SIZES.forEach((size) => {
-    quantities[size] = 0;
-  });
-  form.reset();
-  setStatus("수요가 현재 브라우저에 저장되었습니다.", "success");
-  calculate();
-});
-
-clearEntries.addEventListener("click", () => {
-  localStorage.removeItem(STORAGE_KEY);
-  setStatus("저장 내역을 지웠습니다.");
-  calculate();
+  try {
+    await submitToSheet(payloadFromForm());
+    SIZES.forEach((size) => {
+      quantities[size] = 0;
+    });
+    form.reset();
+    await loadSheetState();
+    setStatus("수요가 구글 시트에 저장되었습니다.", "success");
+  } catch (error) {
+    setStatus(error.message || "저장 중 문제가 발생했습니다.", "error");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "수요 저장";
+    calculate();
+  }
 });
 
 calculate();
+loadSheetState().catch((error) => setStatus(error.message, "error"));
