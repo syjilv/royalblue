@@ -93,35 +93,18 @@
         <div class="fit-gallery">
           <figure>
             <img src="assets/fit-male-front.png" alt="남성 모델 앞면 착용 컷" />
-            <figcaption>남성 앞면</figcaption>
           </figure>
           <figure>
             <img src="assets/fit-male-back.png" alt="남성 모델 뒷면 착용 컷" />
-            <figcaption>남성 뒷면</figcaption>
           </figure>
           <figure>
             <img src="assets/fit-female-front.png" alt="여성 모델 앞면 착용 컷" />
-            <figcaption>여성 앞면</figcaption>
           </figure>
           <figure>
             <img src="assets/fit-female-back.png" alt="여성 모델 뒷면 착용 컷" />
-            <figcaption>여성 뒷면</figcaption>
           </figure>
           <figure>
-            <img src="assets/detail-crown-top.png" alt="전면 크라운 프린트 디테일" />
-            <figcaption>전면 크라운</figcaption>
-          </figure>
-          <figure>
-            <img src="assets/detail-back-top.png" alt="후면 로고 프린트 디테일" />
-            <figcaption>후면 로고</figcaption>
-          </figure>
-          <figure>
-            <img src="assets/detail-crown-bottom.png" alt="전면 크라운 프린트 원단 디테일" />
-            <figcaption>크라운 원단 디테일</figcaption>
-          </figure>
-          <figure>
-            <img src="assets/detail-back-bottom.png" alt="후면 로고 프린트 원단 디테일" />
-            <figcaption>후면 원단 디테일</figcaption>
+            <img src="assets/P1300120.jpg" alt="로얄블루 후면 프린트 클로즈업" />
           </figure>
         </div>
       </section>
@@ -140,7 +123,7 @@
               모양이 쉽게 무너지지 않는 것이 장점입니다.
             </p>
             <ul>
-              <li>소재: 면 100% · 모쿠그레이는 면 20%, 폴리에스터 80%</li>
+              <li>소재: 면 100%</li>
               <li>제조사: Printstar</li>
               <li>제조국: Made in Vietnam</li>
               <li>핏감: 정사이즈</li>
@@ -149,7 +132,6 @@
               <li>두께: 도톰한 소재</li>
             </ul>
           </div>
-          <img src="assets/product-info.png" alt="상품 정보와 세탁 방법 안내" />
         </div>
       </section>
 
@@ -212,7 +194,6 @@
           </table>
         </div>
         <p class="note">측정 방법과 위치에 따라 1~3cm 오차가 있을 수 있습니다.</p>
-        <img class="size-image" src="assets/size-info.png" alt="티셔츠 사이즈 측정 위치 안내" />
       </section>
 
       <section id="order" class="section order">
@@ -279,7 +260,7 @@
             </fieldset>
             <button id="submitButton" class="button button--primary" type="submit">수요 저장</button>
             <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
-            <input id="sheetEndpoint" type="hidden" value="https://script.google.com/macros/s/AKfycbwLCKuhoZmHdS2p2l8_kF9A1W0_5SZRoPgIC3O-gIXAKDsdNDelueww6I7dw54TMBWr/exec" />
+            <input id="sheetEndpoint" type="hidden" value="https://script.google.com/macros/s/AKfycbyoCTYgcNmPm_iPplMw2q-RtUnJ0oSyhZMm3lbzMw6IObvFiq_mp7xo7S4S_ZRasJdf/exec" />
           </form>
 
           <aside class="summary">
@@ -290,7 +271,11 @@
                 <dd id="savedTotal">0장</dd>
               </div>
               <div>
-                <dt>입력 중 수량</dt>
+                <dt>예상 적용 단가</dt>
+                <dd id="baseUnitPrice">28,900원</dd>
+              </div>
+              <div>
+                <dt>구매 수량</dt>
                 <dd id="draftTotal">0장</dd>
               </div>
               <div>
@@ -302,10 +287,6 @@
                 <dd id="shippingFee">0원</dd>
               </div>
               <div class="summary__total">
-                <dt>예상 적용 단가</dt>
-                <dd id="baseUnitPrice">28,900원</dd>
-              </div>
-              <div>
                 <dt>내 예상 금액</dt>
                 <dd id="draftEstimate">0원</dd>
               </div>
@@ -328,12 +309,12 @@
                 <tbody>
                   <tr>
                     <th>단가</th>
-                    <td>28,900</td>
-                    <td>27,840</td>
-                    <td>26,980</td>
-                    <td>26,080</td>
-                    <td>25,820</td>
-                    <td>25,060</td>
+                    <td>29,000</td>
+                    <td>28,000</td>
+                    <td>27,000</td>
+                    <td>26,100</td>
+                    <td>25,900</td>
+                    <td>25,100</td>
                     <td>24,300</td>
                   </tr>
                 </tbody>
@@ -345,7 +326,10 @@
         <div class="saved-demand">
           <div>
             <h3>최근 접수 내역</h3>
-            <p>구글 시트에 접수된 최근 수요를 기준으로 표시됩니다.</p>
+            <p>
+              구글 시트에 접수된 최근 수요를 기준으로 표시됩니다.
+              <a id="sheetLink" class="sheet-link is-hidden" href="#" target="_blank" rel="noopener">시트 열기</a>
+            </p>
           </div>
           <button id="refreshEntries" class="button button--ghost" type="button">새로고침</button>
           <div id="entryList" class="entry-list"></div>
@@ -360,4 +344,3 @@
     <script src="script.js"></script>
   </body>
 </html>
-

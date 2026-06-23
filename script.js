@@ -24,6 +24,7 @@ const entryList = document.querySelector("#entryList");
 const refreshEntries = document.querySelector("#refreshEntries");
 const submitButton = document.querySelector("#submitButton");
 const endpointInput = document.querySelector("#sheetEndpoint");
+const sheetLink = document.querySelector("#sheetLink");
 const counters = [...document.querySelectorAll(".size-counter")];
 const deliveryRadios = [...document.querySelectorAll('input[name="delivery"]')];
 const quantities = Object.fromEntries(SIZES.map((size) => [size, 0]));
@@ -31,6 +32,7 @@ const quantities = Object.fromEntries(SIZES.map((size) => [size, 0]));
 let sheetState = {
   totalQuantity: 0,
   entries: [],
+  spreadsheetUrl: "",
 };
 
 const formatWon = (value) => `${value.toLocaleString("ko-KR")}원`;
@@ -145,7 +147,12 @@ function loadSheetState() {
       sheetState = {
         totalQuantity: Number(data.totalQuantity) || 0,
         entries: Array.isArray(data.entries) ? data.entries : [],
+        spreadsheetUrl: data.spreadsheetUrl || "",
       };
+      if (sheetState.spreadsheetUrl) {
+        sheetLink.href = sheetState.spreadsheetUrl;
+        sheetLink.classList.remove("is-hidden");
+      }
       delete window[callbackName];
       script.remove();
       calculate();

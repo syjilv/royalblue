@@ -251,7 +251,7 @@ h3 {
 .fit-gallery {
   width: min(1120px, 100%);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -273,14 +273,9 @@ figure img {
   aspect-ratio: 1 / 1;
 }
 
-figcaption {
-  padding: 14px 16px;
-  font-weight: 800;
-}
-
 .detail__grid {
   display: grid;
-  grid-template-columns: 1fr 0.85fr;
+  grid-template-columns: 1fr;
   gap: 32px;
   align-items: start;
 }
@@ -395,6 +390,17 @@ legend {
   gap: 8px;
   margin: 0;
   font-weight: 700;
+}
+
+.pickup-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+}
+
+.pickup-field legend {
+  width: 100%;
 }
 
 input,
@@ -546,6 +552,14 @@ textarea {
 .saved-demand p {
   margin-bottom: 16px;
   color: var(--muted);
+}
+
+.sheet-link {
+  display: inline-flex;
+  margin-left: 8px;
+  color: var(--blue);
+  font-weight: 800;
+  text-decoration: underline;
 }
 
 .entry-list {

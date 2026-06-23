@@ -56,6 +56,7 @@ function doGet(e) {
 }
 
 function getSummary() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = getSheet();
   const values = sheet.getDataRange().getValues();
   const rows = values.slice(1);
@@ -78,6 +79,7 @@ function getSummary() {
 
   return {
     ok: true,
+    spreadsheetUrl: spreadsheet.getUrl(),
     totalQuantity: entries.reduce((sum, entry) => sum + entry.totalQuantity, 0),
     entries: entries.slice(-10).reverse(),
   };
