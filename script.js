@@ -272,3 +272,40 @@ form.addEventListener("submit", async (event) => {
 
 calculate();
 loadSheetState().catch((error) => setStatus(error.message, "error"));
+
+const lightbox = document.querySelector("#imageLightbox");
+const lightboxImage = document.querySelector("#lightboxImage");
+const lightboxClose = document.querySelector(".image-lightbox__close");
+const galleryImages = [...document.querySelectorAll(".fit-gallery img")];
+
+function closeLightbox() {
+  if (!lightbox || !lightboxImage) return;
+
+  lightbox.classList.remove("is-open");
+  lightbox.setAttribute("aria-hidden", "true");
+  lightboxImage.src = "";
+  lightboxImage.alt = "";
+  document.body.style.overflow = "";
+}
+
+galleryImages.forEach((image) => {
+  image.addEventListener("click", () => {
+    if (!lightbox || !lightboxImage) return;
+
+    lightboxImage.src = image.currentSrc || image.src;
+    lightboxImage.alt = image.alt;
+    lightbox.classList.add("is-open");
+    lightbox.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  });
+});
+
+lightboxClose?.addEventListener("click", closeLightbox);
+
+lightbox?.addEventListener("click", (event) => {
+  if (event.target === lightbox) closeLightbox();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeLightbox();
+});
