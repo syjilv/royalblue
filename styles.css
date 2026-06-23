@@ -281,14 +281,29 @@ figure img {
 }
 
 .detail-copy {
+  width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.78fr);
+  gap: 18px 34px;
+  align-items: start;
   padding: 28px;
   border-left: 6px solid var(--blue);
   background: var(--soft);
 }
 
+.detail-copy h3,
+.detail-copy p {
+  margin-right: 0;
+}
+
+.detail-copy h3 {
+  grid-column: 1 / -1;
+}
+
 .detail-copy ul {
   padding-left: 20px;
-  margin: 20px 0 0;
+  margin: 0;
 }
 
 .detail-copy li + li {
@@ -385,22 +400,36 @@ legend {
 }
 
 .radio {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 10px;
   margin: 0;
+  min-height: 50px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
   font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .pickup-field {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .pickup-field legend {
-  width: 100%;
+  margin-bottom: 8px;
+}
+
+.radio input[type="radio"] {
+  width: auto;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--blue);
 }
 
 input,
@@ -645,6 +674,10 @@ footer p {
   .fit-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .detail-copy {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 520px) {
@@ -660,6 +693,10 @@ footer p {
   }
 
   .fit-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .pickup-field {
     grid-template-columns: 1fr;
   }
 
