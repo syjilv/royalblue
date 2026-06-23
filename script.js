@@ -2,12 +2,12 @@ const SIZES = ["S", "M", "L", "XL", "2XL", "3XL"];
 const SURCHARGE_SIZES = new Set(["2XL", "3XL"]);
 const PRICE_TIERS = [
   { min: 200, price: 24300 },
-  { min: 100, price: 25060 },
-  { min: 50, price: 25820 },
-  { min: 30, price: 26080 },
-  { min: 20, price: 26980 },
-  { min: 5, price: 27840 },
-  { min: 1, price: 28900 },
+  { min: 100, price: 25100 },
+  { min: 50, price: 25900 },
+  { min: 30, price: 26100 },
+  { min: 20, price: 27000 },
+  { min: 5, price: 28000 },
+  { min: 1, price: 29000 },
 ];
 const PLUS_SIZE_SURCHARGE = 2000;
 const SHIPPING_FEE = 4500;
