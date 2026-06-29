@@ -22,10 +22,10 @@
         <h1>로얄블루 2026 여름 티셔츠</h1>
         <p>
           오래 이어온 인연을 다시 한 번 같은 옷으로 맞추는 여름.
-          경기장에서도, 평소 생활에서도 편하게 입을 수 있는 화이트 라운드 반팔입니다.
+          경기장에서도, 평소 생활에서도 편하게 입을 수 있는 화이트·블랙 라운드 반팔입니다.
         </p>
         <div class="hero__actions">
-          <a class="button button--primary" href="#order">공동구매 신청</a>
+          <a class="button button--primary" href="#order">구매 신청</a>
           <a class="button button--ghost" href="#size">사이즈 보기</a>
         </div>
       </div>
@@ -34,12 +34,69 @@
     <main>
       <section class="purchase-strip" aria-label="구매 요약">
         <div>
-          <span>수요조사 기간</span>
-          <strong>6/23 - 6/28</strong>
+          <span>신청 기간</span>
+          <strong>6/29 - 7/1</strong>
         </div>
         <div>
-          <span>예상 단가</span>
-          <strong>29,000 ~ 26,000원(신청 수량별 변동)</strong>
+          <span>판매 가격</span>
+          <strong>28,000원</strong>
+        </div>
+        <div>
+          <span>제작 시작</span>
+          <strong>7/2</strong>
+        </div>
+      </section>
+
+      <section id="order" class="section order order--featured">
+        <div class="section__title">
+          <p class="eyebrow">Order Now</p>
+          <h2>구매 신청</h2>
+          <p>6월 29일부터 7월 1일까지 신청 후 아래 계좌로 입금해 주세요. 7월 2일 제작 시작 이후 추가 구매 가격은 사이즈와 관계없이 장당 30,000원입니다.</p>
+        </div>
+        <div class="order-notice">
+          <div><span>입금 계좌</span><strong>토스뱅크 1000-4089-3550 유병수</strong></div>
+          <div><span>기본 가격</span><strong>S~XL 28,000원 · 2XL~3XL 30,000원</strong></div>
+        </div>
+        <div class="order-layout">
+          <form id="demandForm" class="order-form">
+            <label>이름<input name="name" type="text" autocomplete="name" required /></label>
+            <div class="color-orders">
+              <section class="color-order" data-color="화이트">
+                <div class="color-order__heading"><span class="color-swatch color-swatch--white"></span><div><strong>화이트</strong><small>청·백·적 오리지널 그래픽</small></div></div>
+                <div class="size-counter-list" aria-label="화이트 사이즈별 구매 수량"></div>
+              </section>
+              <section class="color-order color-order--black" data-color="블랙">
+                <div class="color-order__heading"><span class="color-swatch color-swatch--black"></span><div><strong>블랙</strong><small>블랙 바탕의 청·백·적 그래픽</small></div></div>
+                <div class="size-counter-list" aria-label="블랙 사이즈별 구매 수량"></div>
+              </section>
+            </div>
+            <fieldset class="pickup-field">
+              <legend>수령방법</legend>
+              <label class="radio"><input type="radio" name="delivery" value="현장수령" checked /><span><strong>현장수령</strong><small>직접 전달</small></span></label>
+              <label class="radio"><input type="radio" name="delivery" value="택배" /><span><strong>택배</strong><small>배송비 4,500원</small></span></label>
+            </fieldset>
+            <label id="addressField" class="address-field is-hidden">배송 주소<input name="address" type="text" autocomplete="street-address" placeholder="받으실 주소를 입력해 주세요" /></label>
+            <button id="submitButton" class="button button--primary" type="submit">구매 신청하기</button>
+            <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
+            <input id="sheetEndpoint" type="hidden" value="https://script.google.com/macros/s/AKfycbwZge9q1B_gvSHLZznHX9CKO7oN22ECSqF0hmiz1Nij7H61DQoDV4Y091VxkVcvOwo2/exec" />
+          </form>
+          <aside class="summary">
+            <h3>주문 금액</h3>
+            <dl>
+              <div><dt>화이트</dt><dd id="whiteTotal">0장</dd></div>
+              <div><dt>블랙</dt><dd id="blackTotal">0장</dd></div>
+              <div><dt>총 구매 수량</dt><dd id="draftTotal">0장</dd></div>
+              <div><dt>상품 금액</dt><dd id="productTotal">0원</dd></div>
+              <div><dt>배송비</dt><dd id="shippingFee">0원</dd></div>
+              <div class="summary__total"><dt>최종 입금액</dt><dd id="draftEstimate">0원</dd></div>
+            </dl>
+            <p class="deposit">신청 완료 후 입금까지 확인되어야 구매가 확정됩니다.</p>
+          </aside>
+        </div>
+        <div class="saved-demand">
+          <div><h3>최근 신청 내역</h3><p>구글 시트에 접수된 최근 신청을 표시합니다. <a id="sheetLink" class="sheet-link is-hidden" href="#" target="_blank" rel="noopener">시트 열기</a></p></div>
+          <button id="refreshEntries" class="button button--ghost" type="button">새로고침</button>
+          <div id="entryList" class="entry-list"></div>
         </div>
       </section>
 
@@ -63,6 +120,9 @@
       </section>
 
       <section class="gallery section" aria-label="티셔츠 이미지">
+        <div class="product-lineup">
+          <img src="assets/자산 1@2x.png" alt="화이트와 블랙 로얄블루 티셔츠 앞면과 뒷면" />
+        </div>
         <div class="mockup mockup--front">
           <img src="assets/front-mockup.png" alt="로얄블루 티셔츠 앞면 목업" />
           <div>
@@ -195,145 +255,6 @@
         <p class="note">측정 방법과 위치에 따라 1~3cm 오차가 있을 수 있습니다.</p>
       </section>
 
-      <section id="order" class="section order">
-        <div class="section__title">
-          <p class="eyebrow">Demand Survey</p>
-          <h2>수요조사</h2>
-          <p>수요조사는 2026년 6월 23일부터 6월 28일까지 진행됩니다. 총 접수 수량에 따라 예상 단가가 달라집니다.</p>
-        </div>
-
-        <div class="order-layout">
-          <form id="demandForm" class="order-form">
-            <label>
-              이름
-              <input name="name" type="text" autocomplete="name" required />
-            </label>
-            <div class="size-counter-list" aria-label="사이즈별 예상 수량">
-              <div class="size-counter" data-size="S">
-                <span>S</span>
-                <button type="button" class="counter-button" data-action="minus" aria-label="S 수량 줄이기">-</button>
-                <output>0</output>
-                <button type="button" class="counter-button" data-action="plus" aria-label="S 수량 늘리기">+</button>
-              </div>
-              <div class="size-counter" data-size="M">
-                <span>M</span>
-                <button type="button" class="counter-button" data-action="minus" aria-label="M 수량 줄이기">-</button>
-                <output>0</output>
-                <button type="button" class="counter-button" data-action="plus" aria-label="M 수량 늘리기">+</button>
-              </div>
-              <div class="size-counter" data-size="L">
-                <span>L</span>
-                <button type="button" class="counter-button" data-action="minus" aria-label="L 수량 줄이기">-</button>
-                <output>0</output>
-                <button type="button" class="counter-button" data-action="plus" aria-label="L 수량 늘리기">+</button>
-              </div>
-              <div class="size-counter" data-size="XL">
-                <span>XL</span>
-                <button type="button" class="counter-button" data-action="minus" aria-label="XL 수량 줄이기">-</button>
-                <output>0</output>
-                <button type="button" class="counter-button" data-action="plus" aria-label="XL 수량 늘리기">+</button>
-              </div>
-              <div class="size-counter" data-size="2XL">
-                <span>2XL (+2,000)</span>
-                <button type="button" class="counter-button" data-action="minus" aria-label="2XL 수량 줄이기">-</button>
-                <output>0</output>
-                <button type="button" class="counter-button" data-action="plus" aria-label="2XL 수량 늘리기">+</button>
-              </div>
-              <div class="size-counter" data-size="3XL">
-                <span>3XL (+2,000)</span>
-                <button type="button" class="counter-button" data-action="minus" aria-label="3XL 수량 줄이기">-</button>
-                <output>0</output>
-                <button type="button" class="counter-button" data-action="plus" aria-label="3XL 수량 늘리기">+</button>
-              </div>
-            </div>
-            <fieldset class="pickup-field">
-              <legend>수령방법</legend>
-              <label class="radio">
-                <input type="radio" name="delivery" value="현장수령" checked />
-                현장수령
-              </label>
-              <label class="radio">
-                <input type="radio" name="delivery" value="택배" />
-                택배
-              </label>
-            </fieldset>
-            <button id="submitButton" class="button button--primary" type="submit">사전 구매 신청</button>
-            <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
-            <input id="sheetEndpoint" type="hidden" value="https://script.google.com/macros/s/AKfycbyoCTYgcNmPm_iPplMw2q-RtUnJ0oSyhZMm3lbzMw6IObvFiq_mp7xo7S4S_ZRasJdf/exec" />
-          </form>
-
-          <aside class="summary">
-            <h3>예상 가격</h3>
-            <dl>
-              <div>
-                <dt>현재 접수 수량</dt>
-                <dd id="savedTotal">0장</dd>
-              </div>
-              <div>
-                <dt>예상 적용 단가</dt>
-                <dd id="baseUnitPrice">28,900원</dd>
-              </div>
-              <div>
-                <dt>구매 수량</dt>
-                <dd id="draftTotal">0장</dd>
-              </div>
-              <div>
-                <dt>수령방법</dt>
-                <dd id="deliverySummary">현장수령</dd>
-              </div>
-              <div>
-                <dt>배송비</dt>
-                <dd id="shippingFee">0원</dd>
-              </div>
-              <div class="summary__total">
-                <dt>내 예상 금액</dt>
-                <dd id="draftEstimate">0원</dd>
-              </div>
-            </dl>
-            <div class="price-table">
-              <h4>할인 가격표</h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>수량</th>
-                    <th>1</th>
-                    <th>5</th>
-                    <th>20</th>
-                    <th>30</th>
-                    <th>50</th>
-                    <th>100</th>
-                    <th>200</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th>단가</th>
-                    <td>29,000</td>
-                    <td>28,000</td>
-                    <td>27,000</td>
-                    <td>26,100</td>
-                    <td>25,900</td>
-                    <td>25,100</td>
-                    <td>24,300</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p class="deposit">2XL, 3XL는 장당 2,000원이 추가됩니다.</p>
-          </aside>
-        </div>
-        <div class="saved-demand">
-          <div>
-            <h3>최근 접수 내역</h3>
-            <p>
-              구글 시트에 접수된 최근 수요를 기준으로 표시됩니다.
-              <a id="sheetLink" class="sheet-link is-hidden" href="#" target="_blank" rel="noopener">시트 열기</a>
-            </p>
-          </div>
-          <button id="refreshEntries" class="button button--ghost" type="button">새로고침</button>
-          <div id="entryList" class="entry-list"></div>
-        </div>
-      </section>
     </main>
 
     <footer>

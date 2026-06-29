@@ -1,73 +1,59 @@
+const COLORS = ["화이트", "블랙"];
 const SIZES = ["S", "M", "L", "XL", "2XL", "3XL"];
-const SURCHARGE_SIZES = new Set(["2XL", "3XL"]);
-const PRICE_TIERS = [
-  { min: 200, price: 24300 },
-  { min: 100, price: 25100 },
-  { min: 50, price: 25900 },
-  { min: 30, price: 26100 },
-  { min: 20, price: 27000 },
-  { min: 5, price: 28000 },
-  { min: 1, price: 29000 },
-];
-const PLUS_SIZE_SURCHARGE = 2000;
+const BASE_PRICE = 28000;
+const PLUS_PRICE = 30000;
 const SHIPPING_FEE = 4500;
 
 const form = document.querySelector("#demandForm");
 const statusMessage = document.querySelector("#formStatus");
-const savedTotal = document.querySelector("#savedTotal");
-const draftTotal = document.querySelector("#draftTotal");
-const deliverySummary = document.querySelector("#deliverySummary");
-const shippingFee = document.querySelector("#shippingFee");
-const baseUnitPrice = document.querySelector("#baseUnitPrice");
-const draftEstimate = document.querySelector("#draftEstimate");
 const entryList = document.querySelector("#entryList");
-const refreshEntries = document.querySelector("#refreshEntries");
 const submitButton = document.querySelector("#submitButton");
 const endpointInput = document.querySelector("#sheetEndpoint");
 const sheetLink = document.querySelector("#sheetLink");
-const counters = [...document.querySelectorAll(".size-counter")];
+const addressField = document.querySelector("#addressField");
+const addressInput = form.elements.address;
 const deliveryRadios = [...document.querySelectorAll('input[name="delivery"]')];
-const quantities = Object.fromEntries(SIZES.map((size) => [size, 0]));
-
-let sheetState = {
-  totalQuantity: 0,
-  entries: [],
-  spreadsheetUrl: "",
-};
+const quantities = Object.fromEntries(
+  COLORS.map((color) => [color, Object.fromEntries(SIZES.map((size) => [size, 0]))]),
+);
+let sheetState = { entries: [], spreadsheetUrl: "" };
 
 const formatWon = (value) => `${value.toLocaleString("ko-KR")}원`;
 const formatCount = (value) => `${value.toLocaleString("ko-KR")}장`;
+const selectedDelivery = () => deliveryRadios.find((radio) => radio.checked)?.value || "현장수령";
+const deliveryFee = () => (selectedDelivery() === "택배" ? SHIPPING_FEE : 0);
+const endpoint = () => endpointInput.value.trim();
 
-function totalForCounts(counts) {
-  return SIZES.reduce((sum, size) => sum + (Number(counts[size]) || 0), 0);
+function createCounters() {
+  document.querySelectorAll(".color-order").forEach((section) => {
+    const color = section.dataset.color;
+    section.querySelector(".size-counter-list").innerHTML = SIZES.map(
+      (size) => `<div class="size-counter" data-color="${color}" data-size="${size}">
+        <span>${size}<small>${size === "2XL" || size === "3XL" ? "30,000원" : "28,000원"}</small></span>
+        <button type="button" class="counter-button" data-action="minus" aria-label="${color} ${size} 수량 줄이기">−</button>
+        <output>0</output>
+        <button type="button" class="counter-button" data-action="plus" aria-label="${color} ${size} 수량 늘리기">+</button>
+      </div>`,
+    ).join("");
+  });
 }
 
-function priceForTotal(total) {
-  return PRICE_TIERS.find((tier) => total >= tier.min)?.price ?? PRICE_TIERS.at(-1).price;
+function colorTotal(color) {
+  return SIZES.reduce((sum, size) => sum + quantities[color][size], 0);
 }
 
-function estimateForCounts(counts, unitPrice) {
-  return SIZES.reduce((sum, size) => {
-    const count = Number(counts[size]) || 0;
-    const surcharge = SURCHARGE_SIZES.has(size) ? PLUS_SIZE_SURCHARGE : 0;
-    return sum + count * (unitPrice + surcharge);
-  }, 0);
+function totalQuantity() {
+  return COLORS.reduce((sum, color) => sum + colorTotal(color), 0);
 }
 
-function selectedDelivery() {
-  return deliveryRadios.find((radio) => radio.checked)?.value ?? "현장수령";
-}
-
-function deliveryFee() {
-  return selectedDelivery() === "택배" ? SHIPPING_FEE : 0;
-}
-
-function endpoint() {
-  return endpointInput.value.trim();
-}
-
-function isEndpointReady() {
-  return endpoint() && !endpoint().includes("PASTE_GOOGLE_APPS_SCRIPT");
+function productAmount() {
+  return COLORS.reduce(
+    (sum, color) => sum + SIZES.reduce(
+      (subtotal, size) => subtotal + quantities[color][size] * (size === "2XL" || size === "3XL" ? PLUS_PRICE : BASE_PRICE),
+      0,
+    ),
+    0,
+  );
 }
 
 function setStatus(message, type = "") {
@@ -75,97 +61,59 @@ function setStatus(message, type = "") {
   statusMessage.className = `form-status${type ? ` is-${type}` : ""}`;
 }
 
-function updateCounters() {
-  counters.forEach((counter) => {
-    const size = counter.dataset.size;
-    counter.querySelector("output").textContent = quantities[size];
+function calculate() {
+  document.querySelector("#whiteTotal").textContent = formatCount(colorTotal("화이트"));
+  document.querySelector("#blackTotal").textContent = formatCount(colorTotal("블랙"));
+  document.querySelector("#draftTotal").textContent = formatCount(totalQuantity());
+  document.querySelector("#productTotal").textContent = formatWon(productAmount());
+  document.querySelector("#shippingFee").textContent = formatWon(deliveryFee());
+  document.querySelector("#draftEstimate").textContent = formatWon(productAmount() + deliveryFee());
+  document.querySelectorAll(".size-counter").forEach((counter) => {
+    counter.querySelector("output").textContent = quantities[counter.dataset.color][counter.dataset.size];
   });
+}
+
+function updateAddressField() {
+  const needsAddress = selectedDelivery() === "택배";
+  addressField.classList.toggle("is-hidden", !needsAddress);
+  addressInput.required = needsAddress;
+  if (!needsAddress) addressInput.value = "";
+  calculate();
 }
 
 function renderEntries(entries = sheetState.entries) {
   if (!entries.length) {
-    entryList.innerHTML = "<p>아직 접수된 수요가 없습니다.</p>";
+    entryList.innerHTML = "<p>아직 접수된 구매 신청이 없습니다.</p>";
     return;
   }
-
-  entryList.innerHTML = entries
-    .map((entry) => {
-      const details = SIZES
-        .filter((size) => entry.counts?.[size])
-        .map((size) => `${size} ${entry.counts[size]}`)
-        .join(" · ");
-
-      return `
-        <article class="entry-card">
-          <div>
-            <strong>${entry.name}</strong>
-            <span>${details} · 총 ${formatCount(totalForCounts(entry.counts || {}))} · ${entry.delivery || "현장수령"}</span>
-          </div>
-          <span>${entry.submittedAt ? new Date(entry.submittedAt).toLocaleDateString("ko-KR") : "-"}</span>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function calculate() {
-  const savedQuantity = Number(sheetState.totalQuantity) || 0;
-  const draftQuantity = totalForCounts(quantities);
-  const expectedTotalQuantity = savedQuantity + draftQuantity;
-  const unitPrice = priceForTotal(expectedTotalQuantity);
-
-  savedTotal.textContent = formatCount(savedQuantity);
-  draftTotal.textContent = formatCount(draftQuantity);
-  deliverySummary.textContent = selectedDelivery();
-  shippingFee.textContent = formatWon(deliveryFee());
-  baseUnitPrice.textContent = formatWon(unitPrice);
-  draftEstimate.textContent = formatWon(estimateForCounts(quantities, unitPrice) + deliveryFee());
-  updateCounters();
-  renderEntries();
+  entryList.innerHTML = entries.map((entry) => {
+    const colorCounts = entry.colorCounts || {};
+    const details = COLORS.map((color) => {
+      const count = SIZES.reduce((sum, size) => sum + (Number(colorCounts[color]?.[size]) || 0), 0);
+      return count ? `${color} ${count}` : "";
+    }).filter(Boolean).join(" · ");
+    return `<article class="entry-card"><div><strong>${entry.name}</strong><span>${details || `총 ${entry.totalQuantity || 0}장`} · ${entry.delivery || "현장수령"}</span></div><span>${entry.submittedAt ? new Date(entry.submittedAt).toLocaleDateString("ko-KR") : "-"}</span></article>`;
+  }).join("");
 }
 
 function loadSheetState() {
-  if (!isEndpointReady()) {
-    setStatus("구글 시트 연동 주소를 연결하면 전체 접수 수량을 불러옵니다.", "error");
-    renderEntries([]);
-    calculate();
-    return Promise.resolve();
-  }
-
-  const callbackName = `royalblueDemand_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  const callbackName = `royalblueOrder_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
   const script = document.createElement("script");
-
   return new Promise((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
-      delete window[callbackName];
-      script.remove();
-      reject(new Error("구글 시트에 접근하지 못했습니다. Apps Script 웹앱 액세스 권한을 확인해주세요."));
-    }, 8000);
-
+    const timeout = window.setTimeout(() => reject(new Error("구글 시트 접수 내역을 불러오지 못했습니다.")), 8000);
     window[callbackName] = (data) => {
-      window.clearTimeout(timeout);
-      sheetState = {
-        totalQuantity: Number(data.totalQuantity) || 0,
-        entries: Array.isArray(data.entries) ? data.entries : [],
-        spreadsheetUrl: data.spreadsheetUrl || "",
-      };
+      clearTimeout(timeout);
+      sheetState = { entries: Array.isArray(data.entries) ? data.entries : [], spreadsheetUrl: data.spreadsheetUrl || "" };
       if (sheetState.spreadsheetUrl) {
         sheetLink.href = sheetState.spreadsheetUrl;
         sheetLink.classList.remove("is-hidden");
       }
       delete window[callbackName];
       script.remove();
-      calculate();
+      renderEntries();
       resolve();
     };
-
-    script.onerror = () => {
-      window.clearTimeout(timeout);
-      delete window[callbackName];
-      script.remove();
-      reject(new Error("구글 시트 집계를 불러오지 못했습니다."));
-    };
-
+    script.onerror = () => { clearTimeout(timeout); reject(new Error("구글 시트에 연결하지 못했습니다.")); };
     const url = new URL(endpoint());
     url.searchParams.set("callback", callbackName);
     script.src = url.toString();
@@ -174,100 +122,58 @@ function loadSheetState() {
 }
 
 async function submitToSheet(payload) {
-  if (!isEndpointReady()) {
-    throw new Error("구글 시트 연동 주소가 아직 연결되지 않았습니다.");
-  }
-
-  await fetch(endpoint(), {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8",
-    },
-    body: JSON.stringify(payload),
-  });
+  await fetch(endpoint(), { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
 }
 
 function payloadFromForm() {
-  const unitPrice = priceForTotal((Number(sheetState.totalQuantity) || 0) + totalForCounts(quantities));
   return {
     submittedAt: new Date().toISOString(),
-    name: new FormData(form).get("name")?.trim() ?? "",
-    counts: { ...quantities },
+    name: new FormData(form).get("name")?.trim() || "",
+    colorCounts: structuredClone(quantities),
+    totalQuantity: totalQuantity(),
     delivery: selectedDelivery(),
-    unitPrice,
+    address: addressInput.value.trim(),
+    productAmount: productAmount(),
     shippingFee: deliveryFee(),
-    plusSizeSurcharge:
-      (Number(quantities["2XL"]) + Number(quantities["3XL"])) * PLUS_SIZE_SURCHARGE,
-    estimatedTotal: estimateForCounts(quantities, unitPrice) + deliveryFee(),
+    totalAmount: productAmount() + deliveryFee(),
   };
 }
 
-counters.forEach((counter) => {
+createCounters();
+document.querySelectorAll(".size-counter").forEach((counter) => {
   counter.addEventListener("click", (event) => {
     const button = event.target.closest("button");
     if (!button) return;
-
-    const size = counter.dataset.size;
-    const direction = button.dataset.action === "plus" ? 1 : -1;
-    quantities[size] = Math.max(0, quantities[size] + direction);
+    const { color, size } = counter.dataset;
+    quantities[color][size] = Math.max(0, quantities[color][size] + (button.dataset.action === "plus" ? 1 : -1));
     setStatus("");
     calculate();
   });
 });
 
-deliveryRadios.forEach((radio) => {
-  radio.addEventListener("change", () => {
-    setStatus("");
-    calculate();
-  });
-});
-
-refreshEntries.addEventListener("click", async () => {
-  setStatus("구글 시트 집계를 불러오는 중입니다.");
-  try {
-    await loadSheetState();
-    setStatus("최신 접수 수량을 불러왔습니다.", "success");
-  } catch (error) {
-    setStatus(error.message, "error");
-  }
+deliveryRadios.forEach((radio) => radio.addEventListener("change", updateAddressField));
+document.querySelector("#refreshEntries").addEventListener("click", async () => {
+  setStatus("최근 신청 내역을 불러오는 중입니다.");
+  try { await loadSheetState(); setStatus("최신 신청 내역을 불러왔습니다.", "success"); }
+  catch (error) { setStatus(error.message, "error"); }
 });
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-
-  const name = new FormData(form).get("name")?.trim();
-  const total = totalForCounts(quantities);
-
-  if (!name) {
-    setStatus("이름을 입력해주세요.", "error");
-    return;
-  }
-
-  if (total === 0) {
-    setStatus("예상 수량을 1장 이상 선택해주세요.", "error");
-    return;
-  }
-
+  if (!new FormData(form).get("name")?.trim()) return setStatus("이름을 입력해 주세요.", "error");
+  if (!totalQuantity()) return setStatus("구매 수량을 1장 이상 선택해 주세요.", "error");
+  if (selectedDelivery() === "택배" && !addressInput.value.trim()) return setStatus("배송 주소를 입력해 주세요.", "error");
   submitButton.disabled = true;
-  submitButton.textContent = "저장 중";
-  setStatus("구글 시트에 저장하는 중입니다.");
-
+  submitButton.textContent = "접수 중";
   try {
     await submitToSheet(payloadFromForm());
-    SIZES.forEach((size) => {
-      quantities[size] = 0;
-    });
+    COLORS.forEach((color) => SIZES.forEach((size) => { quantities[color][size] = 0; }));
     form.reset();
+    updateAddressField();
     await loadSheetState();
-    setStatus("수요가 구글 시트에 저장되었습니다.", "success");
-  } catch (error) {
-    setStatus(error.message || "저장 중 문제가 발생했습니다.", "error");
-  } finally {
-    submitButton.disabled = false;
-    submitButton.textContent = "수요 저장";
-    calculate();
-  }
+    setStatus("구매 신청이 접수되었습니다. 안내 계좌로 입금해 주세요.", "success");
+  } catch (error) { setStatus(error.message || "접수 중 문제가 발생했습니다.", "error"); }
+  finally { submitButton.disabled = false; submitButton.textContent = "구매 신청하기"; calculate(); }
 });
 
 calculate();
@@ -275,37 +181,14 @@ loadSheetState().catch((error) => setStatus(error.message, "error"));
 
 const lightbox = document.querySelector("#imageLightbox");
 const lightboxImage = document.querySelector("#lightboxImage");
-const lightboxClose = document.querySelector(".image-lightbox__close");
-const galleryImages = [...document.querySelectorAll(".fit-gallery img")];
-
-function closeLightbox() {
-  if (!lightbox || !lightboxImage) return;
-
-  lightbox.classList.remove("is-open");
-  lightbox.setAttribute("aria-hidden", "true");
-  lightboxImage.src = "";
-  lightboxImage.alt = "";
-  document.body.style.overflow = "";
-}
-
-galleryImages.forEach((image) => {
-  image.addEventListener("click", () => {
-    if (!lightbox || !lightboxImage) return;
-
-    lightboxImage.src = image.currentSrc || image.src;
-    lightboxImage.alt = image.alt;
-    lightbox.classList.add("is-open");
-    lightbox.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  });
-});
-
-lightboxClose?.addEventListener("click", closeLightbox);
-
-lightbox?.addEventListener("click", (event) => {
-  if (event.target === lightbox) closeLightbox();
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeLightbox();
-});
+document.querySelectorAll(".fit-gallery img, .product-lineup img").forEach((image) => image.addEventListener("click", () => {
+  lightboxImage.src = image.currentSrc || image.src;
+  lightboxImage.alt = image.alt;
+  lightbox.classList.add("is-open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}));
+function closeLightbox() { lightbox.classList.remove("is-open"); lightbox.setAttribute("aria-hidden", "true"); lightboxImage.src = ""; document.body.style.overflow = ""; }
+document.querySelector(".image-lightbox__close").addEventListener("click", closeLightbox);
+lightbox.addEventListener("click", (event) => { if (event.target === lightbox) closeLightbox(); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeLightbox(); });
