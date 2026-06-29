@@ -4,6 +4,7 @@ const BASE_PRICE = 28000;
 const PLUS_PRICE = 30000;
 const SHIPPING_FEE = 4500;
 const ACCOUNT = "토스뱅크 1000-4089-3550 유병수";
+const ACCOUNT_NUMBER = "1000-4089-3550";
 
 const form = document.querySelector("#demandForm");
 const statusMessage = document.querySelector("#formStatus");
@@ -12,6 +13,7 @@ const submitButton = document.querySelector("#submitButton");
 const endpointInput = document.querySelector("#sheetEndpoint");
 const sheetLink = document.querySelector("#sheetLink");
 const addressField = document.querySelector("#addressField");
+const copyAccountButton = document.querySelector("#copyAccountButton");
 const addressInput = form.elements.address;
 const deliveryRadios = [...document.querySelectorAll('input[name="delivery"]')];
 const quantities = Object.fromEntries(COLORS.map((color) => [color, Object.fromEntries(SIZES.map((size) => [size, 0]))]));
@@ -55,6 +57,22 @@ function productAmount() {
 function setStatus(message, type = "") {
   statusMessage.textContent = message;
   statusMessage.className = `form-status${type ? ` is-${type}` : ""}`;
+  copyAccountButton.classList.add("is-hidden");
+  copyAccountButton.textContent = "계좌번호 복사";
+}
+
+async function copyAccountNumber() {
+  try {
+    await navigator.clipboard.writeText(ACCOUNT_NUMBER);
+  } catch {
+    const input = document.createElement("input");
+    input.value = ACCOUNT_NUMBER;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand("copy");
+    input.remove();
+  }
+  copyAccountButton.textContent = "복사됨";
 }
 
 function calculate() {
@@ -166,12 +184,14 @@ form.addEventListener("submit", async (event) => {
     updateAddressField();
     await loadSheetState();
     setStatus(`구매 신청이 접수되었습니다. ${formatWon(amountToPay)}을 안내 계좌 ${ACCOUNT}로 입금해 주시면 입금 확인 후 최종 신청 완료됩니다.`, "success");
+    copyAccountButton.classList.remove("is-hidden");
   } catch (error) { setStatus(error.message || "접수 중 문제가 발생했습니다.", "error"); }
   finally { submitButton.disabled = false; submitButton.textContent = "구매 신청하기"; calculate(); }
 });
 
 calculate();
 loadSheetState().catch((error) => setStatus(error.message, "error"));
+copyAccountButton.addEventListener("click", copyAccountNumber);
 
 const lightbox = document.querySelector("#imageLightbox");
 const lightboxImage = document.querySelector("#lightboxImage");

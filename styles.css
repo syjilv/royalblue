@@ -229,6 +229,15 @@ h3 {
   background: #fff9f1;
 }
 
+.mockup--black {
+  background: #17191d;
+  color: white;
+}
+
+.mockup--black img {
+  border-radius: 6px;
+}
+
 .model-section {
   width: 100%;
   background: var(--blue-dark);
@@ -694,6 +703,19 @@ textarea {
 .form-status.is-error {
   color: var(--red);
   font-weight: 800;
+}
+
+.copy-account {
+  min-height: 42px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  background: white;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .price-table {
