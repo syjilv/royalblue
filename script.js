@@ -4,7 +4,6 @@ const BASE_PRICE = 28000;
 const PLUS_PRICE = 30000;
 const SHIPPING_FEE = 4500;
 const ACCOUNT = "토스뱅크 1000-4089-3550 유병수";
-const ACCOUNT_NUMBER = "1000-4089-3550";
 
 const form = document.querySelector("#demandForm");
 const statusMessage = document.querySelector("#formStatus");
@@ -18,6 +17,7 @@ const addressInput = form.elements.address;
 const deliveryRadios = [...document.querySelectorAll('input[name="delivery"]')];
 const quantities = Object.fromEntries(COLORS.map((color) => [color, Object.fromEntries(SIZES.map((size) => [size, 0]))]));
 let sheetState = { entries: [], spreadsheetUrl: "" };
+let lastPaymentAmount = 0;
 
 const formatWon = (value) => `${Number(value || 0).toLocaleString("ko-KR")}원`;
 const formatCount = (value) => `${Number(value || 0).toLocaleString("ko-KR")}장`;
@@ -62,11 +62,12 @@ function setStatus(message, type = "") {
 }
 
 async function copyAccountNumber() {
+  const paymentText = `${ACCOUNT} ${formatWon(lastPaymentAmount)}`;
   try {
-    await navigator.clipboard.writeText(ACCOUNT_NUMBER);
+    await navigator.clipboard.writeText(paymentText);
   } catch {
     const input = document.createElement("input");
-    input.value = ACCOUNT_NUMBER;
+    input.value = paymentText;
     document.body.appendChild(input);
     input.select();
     document.execCommand("copy");
@@ -175,6 +176,7 @@ form.addEventListener("submit", async (event) => {
   if (!totalQuantity()) return setStatus("구매 수량을 1장 이상 선택해 주세요.", "error");
   if (selectedDelivery() === "택배" && !addressInput.value.trim()) return setStatus("배송 주소를 입력해 주세요.", "error");
   const amountToPay = productAmount() + deliveryFee();
+  lastPaymentAmount = amountToPay;
   submitButton.disabled = true;
   submitButton.textContent = "접수 중";
   try {
