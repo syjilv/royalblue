@@ -5,7 +5,7 @@ const HEADERS = [
   "접수시각", "이름",
   "화이트 S", "화이트 M", "화이트 L", "화이트 XL", "화이트 2XL", "화이트 3XL",
   "블랙 S", "블랙 M", "블랙 L", "블랙 XL", "블랙 2XL", "블랙 3XL",
-  "총수량", "수령방법", "배송주소", "상품금액", "배송비", "총입금액"
+  "총수량", "수령방법", "배송주소", "상품금액", "배송비", "총입금액", "입금확인"
 ];
 
 function doPost(e) {
@@ -15,23 +15,16 @@ function doPost(e) {
   const quantityCells = COLORS.flatMap(function(color) {
     return SIZES.map(function(size) { return Number((colorCounts[color] || {})[size]) || 0; });
   });
-  sheet.appendRow([
-    new Date(), data.name || ""
-  ].concat(quantityCells, [
-    Number(data.totalQuantity) || 0,
-    data.delivery || "현장수령",
-    data.address || "",
-    Number(data.productAmount) || 0,
-    Number(data.shippingFee) || 0,
-    Number(data.totalAmount) || 0
+  sheet.appendRow([new Date(), data.name || ""].concat(quantityCells, [
+    Number(data.totalQuantity) || 0, data.delivery || "현장수령", data.address || "",
+    Number(data.productAmount) || 0, Number(data.shippingFee) || 0, Number(data.totalAmount) || 0, ""
   ]));
   return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doGet(e) {
   const callback = e.parameter.callback || "callback";
-  return ContentService.createTextOutput(callback + "(" + JSON.stringify(getSummary()) + ");")
-    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  return ContentService.createTextOutput(callback + "(" + JSON.stringify(getSummary()) + ");").setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
 function getSummary() {
@@ -41,15 +34,12 @@ function getSummary() {
     const colorCounts = {};
     COLORS.forEach(function(color, colorIndex) {
       colorCounts[color] = {};
-      SIZES.forEach(function(size, sizeIndex) {
-        colorCounts[color][size] = Number(row[2 + colorIndex * SIZES.length + sizeIndex]) || 0;
-      });
+      SIZES.forEach(function(size, sizeIndex) { colorCounts[color][size] = Number(row[2 + colorIndex * SIZES.length + sizeIndex]) || 0; });
     });
     return {
-      submittedAt: row[0] instanceof Date ? row[0].toISOString() : row[0],
-      name: row[1], colorCounts: colorCounts,
-      totalQuantity: Number(row[14]) || 0,
-      delivery: row[15] || "현장수령"
+      submittedAt: row[0] instanceof Date ? row[0].toISOString() : row[0], name: row[1], colorCounts: colorCounts,
+      totalQuantity: Number(row[14]) || 0, delivery: row[15] || "현장수령",
+      totalAmount: Number(row[19]) || 0, paymentConfirmed: row[20] || ""
     };
   });
   return { ok: true, spreadsheetUrl: spreadsheet.getUrl(), entries: entries.slice(-10).reverse() };
@@ -60,5 +50,6 @@ function getSheet() {
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
   if (!sheet) sheet = spreadsheet.insertSheet(SHEET_NAME);
   if (sheet.getLastRow() === 0) sheet.appendRow(HEADERS);
+  if (!sheet.getRange(1, 21).getValue()) sheet.getRange(1, 21).setValue("입금확인");
   return sheet;
 }

@@ -32,26 +32,21 @@
     </header>
 
     <main>
-      <section class="purchase-strip" aria-label="구매 요약">
-        <div>
-          <span>신청 기간</span>
-          <strong>6/29 - 7/1</strong>
-        </div>
-        <div>
-          <span>판매 가격</span>
-          <strong>28,000원</strong>
-        </div>
-        <div>
-          <span>제작 시작</span>
-          <strong>7/2</strong>
-        </div>
-      </section>
+      <div class="product-lineup product-lineup--featured">
+        <img src="assets/자산 1@2x.png" alt="화이트와 블랙 로얄블루 티셔츠 앞면과 뒷면" />
+      </div>
 
       <section id="order" class="section order order--featured">
         <div class="section__title">
           <p class="eyebrow">Order Now</p>
           <h2>구매 신청</h2>
-          <p>6월 29일부터 7월 1일까지 신청 후 아래 계좌로 입금해 주세요. 7월 2일 제작 시작 이후 추가 구매 가격은 사이즈와 관계없이 장당 30,000원입니다.</p>
+          <ul class="order-points">
+            <li>신청 기간: 6월 29일 ~ 7월 1일</li>
+            <li>판매 가격: S~XL 28,000원 · 2XL~3XL 30,000원</li>
+            <li>제작 시작: 7월 2일</li>
+            <li>화이트와 블랙은 각 색상별 전체 신청 수량이 20장을 초과하면 장당 1,000원이 할인됩니다.</li>
+            <li>제작 시작 이후 추가 구매 가격은 사이즈와 관계없이 장당 30,000원입니다.</li>
+          </ul>
         </div>
         <div class="order-notice">
           <div><span>입금 계좌</span><strong>토스뱅크 1000-4089-3550 유병수</strong></div>
@@ -62,11 +57,11 @@
             <label>이름<input name="name" type="text" autocomplete="name" required /></label>
             <div class="color-orders">
               <section class="color-order" data-color="화이트">
-                <div class="color-order__heading"><span class="color-swatch color-swatch--white"></span><div><strong>화이트</strong><small>청·백·적 오리지널 그래픽</small></div></div>
+                <div class="color-order__heading"><div><strong>화이트</strong><small>청·백·적 오리지널 그래픽</small></div></div>
                 <div class="size-counter-list" aria-label="화이트 사이즈별 구매 수량"></div>
               </section>
               <section class="color-order color-order--black" data-color="블랙">
-                <div class="color-order__heading"><span class="color-swatch color-swatch--black"></span><div><strong>블랙</strong><small>블랙 바탕의 청·백·적 그래픽</small></div></div>
+                <div class="color-order__heading"><div><strong>블랙</strong><small>블랙 바탕의 청·백·적 그래픽</small></div></div>
                 <div class="size-counter-list" aria-label="블랙 사이즈별 구매 수량"></div>
               </section>
             </div>
@@ -76,22 +71,22 @@
               <label class="radio"><input type="radio" name="delivery" value="택배" /><span><strong>택배</strong><small>배송비 4,500원</small></span></label>
             </fieldset>
             <label id="addressField" class="address-field is-hidden">배송 주소<input name="address" type="text" autocomplete="street-address" placeholder="받으실 주소를 입력해 주세요" /></label>
+            <aside class="summary summary--inline">
+              <h3>주문 금액</h3>
+              <dl>
+                <div><dt>화이트</dt><dd id="whiteTotal">0장</dd></div>
+                <div><dt>블랙</dt><dd id="blackTotal">0장</dd></div>
+                <div><dt>총 구매 수량</dt><dd id="draftTotal">0장</dd></div>
+                <div><dt>상품 금액</dt><dd id="productTotal">0원</dd></div>
+                <div><dt>배송비</dt><dd id="shippingFee">0원</dd></div>
+                <div class="summary__total"><dt>최종 입금액</dt><dd id="draftEstimate">0원</dd></div>
+              </dl>
+              <p class="deposit">신청 완료 후 입금까지 확인되어야 구매가 확정됩니다.</p>
+            </aside>
             <button id="submitButton" class="button button--primary" type="submit">구매 신청하기</button>
             <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
-            <input id="sheetEndpoint" type="hidden" value="https://script.google.com/macros/s/AKfycbwZge9q1B_gvSHLZznHX9CKO7oN22ECSqF0hmiz1Nij7H61DQoDV4Y091VxkVcvOwo2/exec" />
+            <input id="sheetEndpoint" type="hidden" value="https://script.google.com/macros/s/AKfycbxtYFeXneWqAUerpd8dOAA4E0DL_qQo54LUghWc70ydo-GmGdezipTEbYa05i42THNm/exec" />
           </form>
-          <aside class="summary">
-            <h3>주문 금액</h3>
-            <dl>
-              <div><dt>화이트</dt><dd id="whiteTotal">0장</dd></div>
-              <div><dt>블랙</dt><dd id="blackTotal">0장</dd></div>
-              <div><dt>총 구매 수량</dt><dd id="draftTotal">0장</dd></div>
-              <div><dt>상품 금액</dt><dd id="productTotal">0원</dd></div>
-              <div><dt>배송비</dt><dd id="shippingFee">0원</dd></div>
-              <div class="summary__total"><dt>최종 입금액</dt><dd id="draftEstimate">0원</dd></div>
-            </dl>
-            <p class="deposit">신청 완료 후 입금까지 확인되어야 구매가 확정됩니다.</p>
-          </aside>
         </div>
         <div class="saved-demand">
           <div><h3>최근 신청 내역</h3><p>구글 시트에 접수된 최근 신청을 표시합니다. <a id="sheetLink" class="sheet-link is-hidden" href="#" target="_blank" rel="noopener">시트 열기</a></p></div>
@@ -120,9 +115,6 @@
       </section>
 
       <section class="gallery section" aria-label="티셔츠 이미지">
-        <div class="product-lineup">
-          <img src="assets/자산 1@2x.png" alt="화이트와 블랙 로얄블루 티셔츠 앞면과 뒷면" />
-        </div>
         <div class="mockup mockup--front">
           <img src="assets/front-mockup.png" alt="로얄블루 티셔츠 앞면 목업" />
           <div>
